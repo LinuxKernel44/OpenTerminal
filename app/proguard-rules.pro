@@ -1,0 +1,2 @@
+-keep class com.openterminal.shell.ShellUserService { *; }
+-keep class com.termux.terminal.** { *; }
