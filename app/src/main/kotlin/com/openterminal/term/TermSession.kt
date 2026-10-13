@@ -38,6 +38,8 @@ class TermSession(
     private val id: Int = service.openSession(initialRows, initialCols, "/data/local/tmp")
     private val master: ParcelFileDescriptor = service.getMasterFd(id)
     private val output = FileOutputStream(master.fileDescriptor)
+    // Must stay referenced: if the ParcelFileDescriptor is GC'd it closes the fd under the reader thread.
+    private val readMaster: ParcelFileDescriptor = service.getMasterFd(id)
 
     /** Bumped whenever the screen content changes so Compose redraws. */
     var revision by mutableIntStateOf(0)
@@ -66,17 +68,17 @@ class TermSession(
     }
 
     private fun readLoop() {
-        val input = FileInputStream(service.getMasterFd(id).fileDescriptor)
+        val input = FileInputStream(readMaster.fileDescriptor)
         val buf = ByteArray(8192)
         try {
             while (true) {
                 val n = input.read(buf)
-                if (n <= 0) break
+                if (n <= 0) { android.util.Log.w("OpenTerminal", "pty read returned $n"); break }
                 val chunk = buf.copyOf(n)
                 main.post { emulator.append(chunk, n); revision++ }
             }
-        } catch (_: Exception) {
-            // EIO when the child exits.
+        } catch (e: Exception) {
+            android.util.Log.w("OpenTerminal", "pty read ended", e)
         }
     }
 
@@ -85,7 +87,7 @@ class TermSession(
     override fun write(data: ByteArray, offset: Int, count: Int) {
         if (closed) return
         val copy = data.copyOfRange(offset, offset + count)
-        io.execute { runCatching { output.write(copy); output.flush() } }
+        io.execute { try { output.write(copy); output.flush() } catch (e: Exception) { android.util.Log.e("OpenTerminal", "pty write failed", e) } }
     }
 
     override fun titleChanged(oldTitle: String?, newTitle: String?) {
@@ -171,6 +173,7 @@ class TermSession(
             runCatching { service.closeSession(id) }
             runCatching { output.close() }
             runCatching { master.close() }
+            runCatching { readMaster.close() }
         }
         io.shutdown()
     }
