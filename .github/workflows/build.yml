@@ -14,11 +14,13 @@ jobs:
         with:
           distribution: temurin
           java-version: 17
-      - uses: android-actions/setup-android@v3
-      - run: sdkmanager "platforms;android-37.0" "ndk;28.2.13676358" "cmake;3.22.1" "build-tools;36.0.0"
+      - name: Install Android SDK packages
+        run: |
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null || true
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-37.0" "ndk;28.2.13676358" "cmake;3.22.1" "build-tools;36.0.0"
       - uses: gradle/actions/setup-gradle@v4
       - run: ./gradlew :app:assembleDebug
       - uses: actions/upload-artifact@v4
         with:
-          name: OpenTerminal-apks
+          name: OpenTerminal-debug-apk
           path: app/build/outputs/apk/debug/*.apk
