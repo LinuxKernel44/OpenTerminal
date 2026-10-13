@@ -18,6 +18,11 @@ A full terminal emulator for Android that runs its shell with **adb-level (shell
 - Android 8.0+ (API 26). Lens refraction effects need Android 13+; older versions fall back to blur only.
 - [Shizuku](https://shizuku.rikka.app/) installed and running (start it with Wireless debugging or adb).
 
+## Download
+
+Signed release APKs are on the [Releases](https://github.com/LinuxKernel44/OpenTerminal/releases) page. Release certificate SHA-256:
+`CC:13:86:96:6C:35:6C:14:4A:EA:E2:EC:0F:C0:F1:90:6C:76:57:8A:F5:B1:E7:FB:1C:A0:69:C7:09:DD:A9:26`
+
 ## Build
 
 ```sh
@@ -34,3 +39,5 @@ Needs JDK 17, Android SDK platform 37, NDK 28 and CMake.
 ## License
 
 GPL-3.0. Includes code from [Termux](https://github.com/termux/termux-app) (`terminal-emulator`, GPLv3).
+
+Release builds are signed with a keystore read from `keystore.properties` (`storeFile`, `storePassword`, `keyAlias`, `keyPassword`) or the `OPENTERMINAL_KEYSTORE`, `OPENTERMINAL_KEYSTORE_PASSWORD`, `OPENTERMINAL_KEY_ALIAS`, `OPENTERMINAL_KEY_PASSWORD` environment variables. Without them `assembleRelease` produces an unsigned APK.

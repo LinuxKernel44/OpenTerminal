@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
@@ -12,9 +14,28 @@ android {
         applicationId = "com.openterminal"
         minSdk = 26
         targetSdk = 36
-        versionCode = 1
-        versionName = "0.1.0"
+        versionCode = 10000
+        versionName = "1.0.0"
         ndk { abiFilters += listOf("arm64-v8a", "armeabi-v7a", "x86_64") }
+    }
+
+    // Release signing: keystore.properties (not committed) or OPENTERMINAL_* environment variables.
+    val keystoreProps = Properties().apply {
+        listOf(rootProject.file("keystore.properties"), file(System.getProperty("user.home") + "/.openterminal-signing/keystore.properties"))
+            .firstOrNull { it.exists() }?.inputStream()?.use { load(it) }
+    }
+    fun signingValue(prop: String, env: String): String? = keystoreProps.getProperty(prop) ?: System.getenv(env)
+    val releaseStore = signingValue("storeFile", "OPENTERMINAL_KEYSTORE")
+
+    signingConfigs {
+        if (releaseStore != null) {
+            create("release") {
+                storeFile = file(releaseStore)
+                storePassword = signingValue("storePassword", "OPENTERMINAL_KEYSTORE_PASSWORD")
+                keyAlias = signingValue("keyAlias", "OPENTERMINAL_KEY_ALIAS")
+                keyPassword = signingValue("keyPassword", "OPENTERMINAL_KEY_PASSWORD")
+            }
+        }
     }
 
     buildTypes {
@@ -22,7 +43,7 @@ android {
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.findByName("release")
         }
     }
 

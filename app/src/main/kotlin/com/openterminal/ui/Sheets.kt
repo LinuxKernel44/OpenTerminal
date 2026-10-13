@@ -113,7 +113,7 @@ fun SettingsSheet(backdrop: Backdrop, colors: GlassColors, onDismiss: () -> Unit
             SettingSwitch("Command suggestions", Settings.showSuggestions, colors) { Settings.showSuggestions = it }
             SettingSwitch("Haptic feedback", Settings.haptics, colors) { Settings.haptics = it }
             GlassButton({ CommandHistory.clear() }, backdrop, colors, Modifier.fillMaxWidth()) { Text("Clear command history", color = colors.onGlass) }
-            Text("OpenTerminal 0.1.0 · GPL-3.0 · liquid glass by Kyant0/AndroidLiquidGlass", color = colors.onGlassDim, fontSize = 12.sp)
+            Text("OpenTerminal 1.0.0 · GPL-3.0 · liquid glass by Kyant0/AndroidLiquidGlass", color = colors.onGlassDim, fontSize = 12.sp)
         }
     }
 }
